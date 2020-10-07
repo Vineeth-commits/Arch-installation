@@ -1,0 +1,112 @@
+#This process is used to tell whether you are connected to the internet or not
+>ip addr show
+#If you want to connect to wifi then the following command is
+>wifi-menu
+#If the ip address is show even after connecting, one can start the dhcp client manually
+>dhcpcd
+#To check if the internet is working we ping one the count of 5
+>ping -c 5 archlinux.org
+#To check the mirror list 
+>nano /etc/pacman.d/mirrorlist
+#To check the PCI buses available use lspci
+#remove areas away from your region
+#Update the system clock
+>timedatectl set-ntp true
+#Use teh below command to check the status 
+>timedatectl status
+#For partitioning disk, the easier way is to use cfdisk
+>cfdisk
+#The label type can be dos for virtual machine and gpt if installing directly
+#create a bootable drive(sdX1 should be made bootable) and a swap memory (should of linux swap type)
+#Format the drive with a file system.Recommended to use ext4
+mkfs.ext4 /dev/sdX1 [ x =a,b,c depending upon the drive]
+#Use following command to check the name of your storage
+>lsblk
+#To create partition for swap
+>mkswap /dev/sdX2
+>swapon /dev/sdX2
+#Mount the file system on the root partition to /mnt
+>mount /dev/sdX1 /mnt
+#use pacstrap to install base packages, linux kernal and firmware
+>pacstrap /mnt base linux linux-firmware
+#generate the fstab file
+>genfstab -U /mnt >> /mnt/etc/fstab
+#change root into the new system 
+>arch-chroot /mnt
+#To check the timezone available
+>ls /usr/share/zoneinfo
+#The format to set the timezone 
+>ln -sf /usr/share/zoneinfo/region/city /etc/localtime
+#run the following to generate /etc/adjtime
+>hwclock --systohc
+#edit /etc/local.gen and uncomment en_US.UTF-8 UTF-8
+#generate the locale
+>locale-gen
+#create a locale.conf and select the lang
+>nano /etc/locale.conf
+LANG=en_US.UTF-8
+#In case nano is not available use pacman to install it.
+#Create the hostname file
+>nano /etc/hostname
+hostname
+#Add matching entries to hosts
+>nano /etc/hosts
+127.0.0.1	localhost
+::1			localhost
+127.0.1.1	myhostname.localdomain	myhostname
+#set a root password
+>passwd
+#enable dhcp (use pacman to install dhcpcd)
+>systemctl enable dhcpcd
+#To check the status of dhcp
+>systemctl status dhcpcd
+#Add a user
+>useradd -m [name_of_the_user]
+#Add password to the user
+>passwd [name_of_the_user]
+#install sudo
+>pacman -S sudo
+#Giving root permissions to the user
+>usermod -aG wheel,audio,video,optical,storage [name_of_the_user]
+#To check the users
+>groups [name_of_the_user]
+#edit sudo and uncomment %wheel ALL=(ALL) ALL
+>visudo
+#Install grub bootloader
+>pacman -S grub
+#install the grub in the drive
+>grub-install /dev/sdX
+>grub-mkconfig -o /boot/grub/grub.cfg
+#reboot and eject the iso file
+#install xorgs 
+>sudo pacman -S xorg
+#Update the system
+>sudo pacman -Syu
+follow the rest from 
+https://www.2daygeek.com/arch-linux-post-installation-30-things-to-do-after-installing-arch-linux/
+https://itsfoss.com/best-aur-helpers/
+https://wiki.archlinux.org/index.php/Installation_guide
+Some recommanded packages to install
+>sudo pacman -S intel-ucode nvidia nvidia-utils nvidia-lts #This is for intel and(or) nvidia video card
+>sudo pacman -S linux-lts linux-lts-headers linux-headers #This is if you want lts kernal which is much stable
+>sudo pacman -S base-devel
+>sudo pacman -S sddm #For kde install
+>systemctl enable sddm
+>sudo pacman -S gdm #For gnome install
+>systemctl enable gdm
+>sudo pacman -S networkmanager wpa_supplicant wireless_tools netctl #The last three are for wireless cards
+>systemctl enable NetworkManager
+>sudo pacman -S binutils make gcc pkg-config fakeroot
+#installation of yay
+>git clone https://aur.archlinux.org/yay.git
+>cd yay
+>makepkg -si #install yay
+#Basic commands of yay
+>yay -S <pkg> #installs from the AUR repository
+>yay -Ss <serach term> #To search for packages
+>yay -Si <pkg> #Specific info about the package
+>yay -Syu #update the packages including AUR else use pacman if you dont want to update the AUR pkg
+>yay -Pu #List of packages that can be updated
+>yay -Yc #Removes unwanted dependencies
+>yay -R <pkg> #removes the pkg
+>yay -Rns <pkg> #removes the pkg and its dependencies
